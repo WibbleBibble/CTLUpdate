@@ -10,21 +10,32 @@
       delete test policy
       wait X mins
     Write target state policy
-    Test that target policy was written, but not that the AT time has changed
+    Test that target policy was written
+    Test that the AT change has taken effect
 
 .PARAMETER  ATinMins
   Mandatory: True
   Description: Value in minutes for AT maximum. Must be less than 60 or less and greater than 10.
   Possible values: Integer 
 
-.PARAMETER  TestAction
+.PARAMETER  UPN
+  Mandatory: True
+  Description: UPN of the account running the script. Used for the AT detection and validation
+  Possible values: UPN
+
+.PARAMETER  Test
   Mandatory: False
   Description: Determines if a test action is required. Only needed for test tenant.
   Switch variable.
 
+.PARAMETER  Sleep
+  Mandatory: False
+  Description: Overrides the default sleep value in between creation of new AAD policy and requesting new AAD token. Use where the default 30 is failing
+  Possible values: Integer 
+
 .EXAMPLE
 
--Set_AT_CTL.ps1 -ATinMins 60 -UPN joe.bloggs@joebloggs.com -Test
+-Set_AT_CTL.ps1 -ATinMins 60 -UPN joe.bloggs@joebloggs.com -Test -Sleep 60
 
 .INPUTS
    <none>
