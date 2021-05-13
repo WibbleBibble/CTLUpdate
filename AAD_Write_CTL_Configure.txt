@@ -1,0 +1,39 @@
+﻿**********************
+Windows PowerShell transcript start
+Start time: 20210513093843
+Username: LENOVO-10\richa
+RunAs User: LENOVO-10\richa
+Configuration Name: 
+Machine: LENOVO-10 (Microsoft Windows NT 10.0.19042.0)
+Host Application: C:\WINDOWS\System32\WindowsPowerShell\v1.0\powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command Import-Module 'c:\Users\richa\.vscode\extensions\ms-vscode.powershell-2021.2.2\modules\PowerShellEditorServices\PowerShellEditorServices.psd1'; Start-EditorServices -HostName 'Visual Studio Code Host' -HostProfileId 'Microsoft.VSCode' -HostVersion '2021.2.2' -AdditionalModules @('PowerShellEditorServices.VSCode') -BundledModulesPath 'c:\Users\richa\.vscode\extensions\ms-vscode.powershell-2021.2.2\modules' -EnableConsoleRepl -StartupBanner '=====> PowerShell Integrated Console v2021.2.2 <=====
+' -LogLevel 'Normal' -LogPath 'c:\Users\richa\.vscode\extensions\ms-vscode.powershell-2021.2.2\logs\1620895113-601671f8-e9c5-42ab-9e0f-e8c0c9ab12fd1620895101354\EditorServices.log' -SessionDetailsPath 'c:\Users\richa\.vscode\extensions\ms-vscode.powershell-2021.2.2\sessions\PSES-VSCode-15920-210410' -FeatureFlags @() 
+Process ID: 1648
+PSVersion: 5.1.19041.906
+PSEdition: Desktop
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1.19041.906
+BuildVersion: 10.0.19041.906
+CLRVersion: 4.0.30319.42000
+WSManStackVersion: 3.0
+PSRemotingProtocolVersion: 2.3
+SerializationVersion: 1.1.0.1
+**********************
+Transcript started, output file is X:\Scripts\GitHub\CTLUpdate\AAD_Write_CTL_Configure.txt
+PS>TerminatingError(Get-AzureADTenantDetail): "You must call the Connect-AzureAD cmdlet before calling any other cmdlets."
+PS>TerminatingError(Get-AzureADPolicy): "You must call the Connect-AzureAD cmdlet before calling any other cmdlets."
+ERROR: ERROR: Failed to read existing AAD policies. Cannot continue
+ERROR: ERROR: Failed to read existing AAD policies. Cannot continue
+
+PS>@{ 'computerName' = if ([Environment]::MachineName) {[Environment]::MachineName}  else {'localhost'}; 'processId' = $PID; 'instanceId' = $host.InstanceId }
+
+Name                           Value
+----                           -----
+processId                      1648
+computerName                   LENOVO-10
+instanceId                     573da62e-62d5-4f2e-af82-cce0c92f3bc5
+
+
+PS X:\Scripts\GitHub\CTLUpdate> .\CTLUpdate.ps1 -ATinMins 60 -UPN rick@monotech-it.co.uk
+**********************
+Windows PowerShell transcript end
+End time: 20210513093851
+**********************

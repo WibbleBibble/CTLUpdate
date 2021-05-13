@@ -4,7 +4,13 @@
 .DESCRIPTION
   Script will:
   Check for existence of policy already and do nothing if it matches (idompotency)
-  If no policy or no match for desired state we will set t
+  If no policy or no match for desired state we will either
+    Set test policy (if switch argument is true), 
+      test that the test policy value (target-5 minutes) results in an AT with the correct value
+      delete test policy
+      wait X mins
+    Write target state policy
+    Test that target policy was written, but not that the AT time has changed
 
 .PARAMETER  ATinMins
   Mandatory: True
@@ -43,9 +49,9 @@ Param(
     [Parameter(Mandatory = $true,Position = 0)]
     [ValidateRange(10, 60)]
     [int]$ATinMins,
-    [Parameter(Mandatory = $true,Position = 0)]
+    [Parameter(Mandatory = $true,Position = 1)]
     [string]$UPN,
-    [Parameter( Mandatory = $false,Position = 1)]
+    [Parameter( Mandatory = $false,Position = 2)]
     [switch]$Test
 )
 
@@ -89,13 +95,15 @@ function GetExistingJWT ($requiredtimeinmins, $TargetAPI, $TargetUserUPN){
           # Convert Expiry time to PowerShell DateTime
           $orig = (Get-Date -Year 1970 -Month 1 -Day 1 -hour 0 -Minute 0 -Second 0 -Millisecond 0)
           $timeZone = Get-TimeZone
-          $utcTime = $orig.AddSeconds($decodedToken.exp)
+          $expTime = $orig.AddSeconds($decodedToken.exp)
+          $nbfTime = $orig.AddSeconds($decodedToken.nbf)
           $offset = $timeZone.GetUtcOffset($(Get-Date)).TotalMinutes #Daylight saving needs to be calculated
-          $localTime = $utcTime.AddMinutes($offset)     # Return local time,
+          $explocalTime = $expTime.AddMinutes($offset)     # Return exp local time,
+          $nbflocalTime = $nbfTime.AddMinutes($offset)     # Return exp local time,
 
-          $decodedToken | Add-Member -Type NoteProperty -Name "expiryDateTime" -Value $localTime
+          $decodedToken | Add-Member -Type NoteProperty -Name "expiryDateTime" -Value $explocalTime
           # Time to Token Expiry
-          $timeToExpiry = ($localTime - (get-date))
+          $timeToExpiry = ($explocalTime - (get-date))
           $decodedToken | Add-Member -Type NoteProperty -Name "timeToExpiry" -Value $timeToExpiry
           #Measure against the offset we'll allow
           if($decodedToken.timeToExpiry.totalminutes -gt $requiredtimeinmins){
@@ -171,6 +179,20 @@ if($null -eq $AADModule){
     }
 }
 
+#Is there a valid AAD connection already?
+try{
+  $Test= Get-AzureADTenantDetail -ErrorAction SilentlyContinue
+}catch{}
+
+if($null -eq $Test){
+  #Connect to AAD
+  try{
+      connect-azuread -AccountId $UPN | out-null
+  }catch{
+      WriteFailureandExit -ErrMessage "Unable to connect to AzureAD using the PowerShell module using current credentials."
+  }
+}
+
 $ATTimeSpan = New-TimeSpan -Minutes $ATinMins
 $ShortNotationATTimeSpan = "{0}" -f $ATTimeSpan
 #Get existing policy - check for an existing org default
@@ -184,6 +206,9 @@ if($PolicyCount -gt 0){
   $PolicyName = (Get-AzureADPolicy | ?{$_.IsOrganizationDefault -ne $true -and $_.type -eq "TokenLifetimePolicy"} | select DisplayName)
   WriteFailureandExit -ErrMessage  "ERROR: There is already a default policy which is org default for tokenlifetimes: '$($PolicyName)'!"
 }
+
+$JWT = get-newJWT -resourceURI $MSGraphAppID -authority $MSLoginEndpoint -clientId $UniversalPSAppID -UserUPN $UPN
+exit
 
 #If we need to test first then we will set the new policy -5
 if($Test){
@@ -214,7 +239,8 @@ try{
 
 
 
-
-}catch{
-  WriteFailureandExit($_.Exception.Message,"ERROR: Failed to create the SP!"){
-}
+##
+#}catch{
+#  WriteFailureandExit($_.Exception.Message,"ERROR: Failed to create the SP!"){
+#}
+Stop-Transcript
